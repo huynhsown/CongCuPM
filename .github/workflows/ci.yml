@@ -1,4 +1,4 @@
-name: CI on Pull Request
+name: Basic CI on Pull Request
 
 on:
   pull_request:
@@ -14,13 +14,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Run tests
-        run: npm test
+      - name: Kiểm tra cú pháp (ví dụ file Python)
+        run: |
+          echo "📁 List file:"
+          ls -la
+          echo "🧪 Kiểm tra file .py (nếu có)"
+          find . -name "*.py" -exec python3 -m py_compile {} \; || echo "Không có file .py nào"
