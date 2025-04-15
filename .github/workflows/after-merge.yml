@@ -1,0 +1,32 @@
+name: Update Jira + Notify Slack after Merge
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  handle-merge:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Lấy Jira issue key từ PR title
+        id: extract
+        run: |
+          echo "🔍 PR Title: ${{ github.event.pull_request.title }}"
+          ISSUE_KEY=$(echo "${{ github.event.pull_request.title }}" | grep -oE '[A-Z]+-[0-9]+')
+          echo "JIRA_KEY=$ISSUE_KEY" >> $GITHUB_ENV
+
+      - name: Gọi API Jira để chuyển trạng thái
+        run: |
+          curl -X POST \
+            -u ${{ secrets.JIRA_EMAIL }}:${{ secrets.JIRA_API_TOKEN }} \
+            -H "Content-Type: application/json" \
+            --data '{"transition":{"id":"31"}}' \
+            "${{ secrets.JIRA_BASE_URL }}/rest/api/3/issue/${{ env.JIRA_KEY }}/transitions"
+
+      - name: Gửi thông báo Slack
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+          --data "{\"text\":\"✅ Đã đóng issue *${{ env.JIRA_KEY }}* sau khi merge PR: *${{ github.event.pull_request.title }}*\"}" \
+          ${{ secrets.SLACK_WEBHOOK_URL }}
