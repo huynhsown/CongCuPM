@@ -23,3 +23,8 @@ jobs:
             -H "Content-Type: application/json" \
             --data '{"transition":{"id":"31"}}' \
             "${{ secrets.JIRA_BASE_URL }}/rest/api/3/issue/${{ env.JIRA_KEY }}/transitions"
+      - name: Notify Slack
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+          --data "{\"text\":\"✅ Jira issue *${{ env.JIRA_KEY }}* đã được đóng sau khi merge PR: *${{ github.event.pull_request.title }}*\"}" \
+          ${{ secrets.SLACK_WEBHOOK_URL }}
